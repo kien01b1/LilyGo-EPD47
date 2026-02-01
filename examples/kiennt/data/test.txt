@@ -1,0 +1,2 @@
+Hello world, this is the 1st line
+The second line, I want to print this out to the e-ink screen

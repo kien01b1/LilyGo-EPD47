@@ -36,11 +36,11 @@
 #include "utilities.h"
 
 #ifndef WIFI_SSID
-#define WIFI_SSID             "Your WiFi SSID"
+#define WIFI_SSID             "Bata"
 #endif
 
 #ifndef WIFI_PASSWORD
-#define WIFI_PASSWORD         "Your WiFi PASSWORD"
+#define WIFI_PASSWORD         "bt14082468"
 #endif
 
 

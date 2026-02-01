@@ -35,9 +35,9 @@
 #include "logo.h"
 #include "utilities.h"
 
-
-// #define USE_SD
-#define USE_FLASH
+//directive for the code to use SD or internal file system, which Kiennt has a spare SD card. Uncomment the USE_FLASH to let the code read file system instead of SD card.
+ #define USE_SD
+//#define USE_FLASH
 
 #if defined(USE_SD)
 #define FILE_SYSTEM SD
@@ -62,24 +62,59 @@ uint8_t *framebuffer;
 char buf[128];
 const Rect_t line1Area = {
     .x = 0,
-    .y = 387,
+    .y = 51,
     .width = 960,
     .height = 51,
 };
+
 const Rect_t line2Area = {
     .x = 0,
-    .y = 438,
+    .y = 102,
     .width = 960,
     .height = 51,
 };
-
 const Rect_t line3Area = {
     .x = 0,
-    .y = 489,
+    .y = 153,
     .width = 960,
     .height = 51,
 };
-
+const Rect_t line4Area = {
+    .x = 0,
+    .y = 204,
+    .width = 960,
+    .height = 51,
+};
+const Rect_t line5Area = {
+    .x = 0,
+    .y = 255,
+    .width = 960,
+    .height = 51,
+};
+const Rect_t line6Area = {
+    .x = 0,
+    .y = 306,
+    .width = 960,
+    .height = 51,
+};
+const Rect_t line7Area = {
+    .x = 0,
+    .y = 357,
+    .width = 960,
+    .height = 51,
+};
+const Rect_t line8Area = {
+    .x = 0,
+    .y = 408,
+    .width = 960,
+    .height = 51,
+};
+const Rect_t line9Area = {
+    .x = 0,
+    .y = 459,
+    .width = 960,
+    .height = 51,
+};
 #define BIT_CLEAN _BV(0)
 #define BIT_SHOW _BV(1)
 
@@ -348,7 +383,8 @@ void setup()
     memset(framebuffer, 0xFF, EPD_WIDTH * EPD_HEIGHT / 2);
     epd_poweron();
     epd_clear();
-
+//remove the stupid logo
+/*
     Rect_t area = {
         .x = 256,
         .y = 180,
@@ -358,7 +394,8 @@ void setup()
 
     // epd_draw_grayscale_image(area, (uint8_t *)logo_data);
     epd_draw_image(area, (uint8_t *)logo_data, BLACK_ON_WHITE);
-
+*/
+//Logo removal done
     WiFi.disconnect();
     delay(100);
     WiFi.mode(WIFI_STA);
@@ -375,8 +412,11 @@ void setup()
         MDNS.addService("http", "tcp", 80);
         DBG_OUTPUT_PORT.println("MDNS responder started");
         DBG_OUTPUT_PORT.print("You can now connect to http://");
-        DBG_OUTPUT_PORT.print(host);
-        DBG_OUTPUT_PORT.println(".local");
+        //DBG_OUTPUT_PORT.print(host);
+        DBG_OUTPUT_PORT.print(WiFi.localIP());
+        DBG_OUTPUT_PORT.print("/edit");
+        //DBG_OUTPUT_PORT.println(".local");
+        
     }
 
     server.on("/list", HTTP_GET, printDirectory);
@@ -403,16 +443,17 @@ void setup()
     server.onNotFound(handleNotFound);
     server.begin();
     DBG_OUTPUT_PORT.println("HTTP server started");
-
+    DBG_OUTPUT_PORT.println(WiFi.localIP());
 #if defined(USE_SD)
     SPI.begin(SD_SCLK, SD_MISO, SD_MOSI, SD_CS);
     bool rlst = FILE_SYSTEM.begin(SD_CS, SPI);
 #else
-    bool rlst = FILE_SYSTEM.begin(true);
+    bool rlst = FILE_SYSTEM.begin(true); 
 #endif
     if (rlst) {
         DBG_OUTPUT_PORT.println("FS initialized.");
         hasFILE_SYSTEM = true;
+        
     } else {
         DBG_OUTPUT_PORT.println("FS initialization failed.");
         epd_clear_area(line3Area);
@@ -483,28 +524,31 @@ void WiFiEvent(WiFiEvent_t event)
         epd_clear_area(line1Area);
         cursor_x = line1Area.x;
         cursor_y = line1Area.y + FiraSans.advance_y + FiraSans.descender;
-        writeln((GFXfont *)&FiraSans, "WiFi Disconnected", &cursor_x, &cursor_y, NULL);
+        writeln((GFXfont *)&FiraSans, "WiFi Status: Disconnected", &cursor_x, &cursor_y, NULL);
         break;
     case ARDUINO_EVENT_WIFI_STA_AUTHMODE_CHANGE:
         Serial.println("Authentication mode of access point has changed");
         break;
     case ARDUINO_EVENT_WIFI_STA_GOT_IP:
         Serial.print("Obtained IP address: ");
-        Serial.println(WiFi.localIP());
+        Serial.println(WiFi.localIP().toString());
 
         memset(buf, 0, sizeof(buf));
-        sprintf(buf, "Connected to %s", ssid);
+        sprintf(buf, "%s:Connected | IP: %s", ssid,WiFi.localIP().toString());
         epd_clear_area(line1Area);
         cursor_x = line1Area.x;
         cursor_y = line1Area.y + FiraSans.advance_y + FiraSans.descender;
         writeln((GFXfont *)&FiraSans, buf, &cursor_x, &cursor_y, NULL);
-
+//One line is enough, remove other lines
+        /*
         epd_clear_area(line2Area);
         cursor_x = line2Area.x;
         cursor_y = line2Area.y + FiraSans.advance_y + FiraSans.descender;
         memset(buf, 0, sizeof(buf));
-        sprintf(buf, "Please visit http://%s.local/edit", host);
+        //sprintf(buf, "Please visit http://%s.local/edit", host);
+        sprintf(buf, "Web server running at: http://%s/edit", WiFi.localIP().toString());
         writeln((GFXfont *)&FiraSans, buf, &cursor_x, &cursor_y, NULL);
+*/
         break;
     case ARDUINO_EVENT_WIFI_STA_LOST_IP:
         Serial.println("Lost IP address and IP address is reset to 0");
